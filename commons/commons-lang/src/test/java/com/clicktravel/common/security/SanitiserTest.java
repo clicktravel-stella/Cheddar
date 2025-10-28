@@ -93,7 +93,7 @@ public class SanitiserTest {
     }
 
     @Test
-    public void shouldNotSanitise_whenNoMarkUp() {
+    public void shouldNotSanitiseIfMarkupPresent_whenNoMarkUp() {
         // Given
         final String value = randomString(10);
 
@@ -105,7 +105,7 @@ public class SanitiserTest {
     }
 
     @Test
-    public void shouldNotSanitiseWhenContainsAmpersand_whenNoMarkUp() {
+    public void shouldNotSanitiseIfMarkupPresentWhenContainsAmpersand_whenNoMarkUp() {
         // Given
         final String value = "Miles & Miles";
 
@@ -117,7 +117,7 @@ public class SanitiserTest {
     }
 
     @Test
-    public void shouldSanitiseWithValueHavingXSSAttackPrevented_ifMarkUpPresent() {
+    public void shouldSanitiseIfMarkupPresent_withValueHavingXSSAttackPrevented() {
         // Given
         final String value = "<a href='https://www.example.com/' onclick='alert(\"XSS Attack\")'>Click Me</a>";
 
@@ -129,7 +129,7 @@ public class SanitiserTest {
     }
 
     @Test
-    public void shouldSanitiseWithMultipleSuspectCharacters_whenNoMarkUp() {
+    public void shouldSanitiseIfMarkupPresentWithMultipleSuspectCharacters_whenNoMarkUp() {
         // Given
         final String value = randomString(10);
 
