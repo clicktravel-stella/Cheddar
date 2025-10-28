@@ -33,7 +33,7 @@ public class Sanitiser {
 
     public static String sanitiseValue(final String value) {
         if (StringUtils.isBlank(value)) {
-            return null;
+            return value;
         }
 
         String sanitisedString = value.trim();
@@ -59,7 +59,7 @@ public class Sanitiser {
      */
     public static String sanitiseIfMarkupPresent(final String value) {
         if (StringUtils.isBlank(value)) {
-            return null;
+            return value;
         }
 
         String sanitisedString = value.trim();
