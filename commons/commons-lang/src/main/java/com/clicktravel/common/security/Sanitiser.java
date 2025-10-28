@@ -24,10 +24,12 @@ import org.owasp.html.PolicyFactory;
 
 public class Sanitiser {
 
-    private static final String[] SUSPECT_START_CHARACTERS = { "=", "+", "-", "@", "0x09", "0x0D" };
+    private static final String[] SUSPECT_START_CHARACTERS = {"=", "+", "-", "@", "0x09", "0x0D"};
     // Allows any English characters (case-insensitive) and also commas, full stops, apostrophes and hyphens
     // to support names like, "Test Tester, Jr", "Test Tester Jr.", "Test O'Tester" and "Test-Bob Tester".
     private static final Pattern FULL_NAME_REGEX = Pattern.compile("^[a-z ,.'-]+$", Pattern.CASE_INSENSITIVE);
+
+    private static final PolicyFactory POLICY = new HtmlPolicyBuilder().toFactory();
 
     public static String sanitiseValue(final String value) {
         if (StringUtils.isBlank(value)) {
@@ -44,10 +46,43 @@ public class Sanitiser {
         if (!FULL_NAME_REGEX.matcher(sanitisedString).matches()) {
             // Use OWASP Java HTML Sanitiser to sanitise HTML/JS input. This policy
             // allows no exceptions.
-            final PolicyFactory policyFactory = new HtmlPolicyBuilder().toFactory();
-            sanitisedString = policyFactory.sanitize(sanitisedString);
+            sanitisedString = POLICY.sanitize(sanitisedString);
         }
 
         return sanitisedString;
+    }
+
+    /**
+     * New, safer-for-business-data variant.
+     * Only sanitises when the input actually looks like HTML or script markup.
+     * Intended for plain-text fields (names, schemes, membership numbers, etc.)
+     */
+    public static String sanitiseIfMarkupPresent(final String value) {
+        if (StringUtils.isBlank(value)) {
+            return null;
+        }
+
+        String sanitisedString = value.trim();
+
+        // Remove leading characters that can trigger CSV injection
+        while (StringUtils.startsWithAny(sanitisedString, SUSPECT_START_CHARACTERS)) {
+            sanitisedString = sanitisedString.substring(1);
+        }
+
+        if (containsMarkup(sanitisedString)) {
+            sanitisedString = POLICY.sanitize(sanitisedString);
+        }
+
+        return sanitisedString;
+    }
+
+    // Helper to detect potential HTML/script markup
+    private static boolean containsMarkup(final String input) {
+        final String lower = input.toLowerCase();
+        return lower.contains("<") || lower.contains(">") ||
+                lower.contains("script") ||
+                lower.contains("onerror") ||
+                lower.contains("onload") ||
+                lower.contains("constructor.constructor");
     }
 }
